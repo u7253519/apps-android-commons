@@ -44,10 +44,10 @@ public class DeleteHelper {
     private DialogInterface.OnMultiChoiceClickListener listener;
 
     @Inject
-    public DeleteHelper(NotificationHelper notificationHelper,
-                        @Named("commons-page-edit") PageEditClient pageEditClient,
-                        ViewUtilWrapper viewUtil,
-                        @Named("username") String username) {
+    public DeleteHelper(final NotificationHelper notificationHelper,
+                        @Named("commons-page-edit") final PageEditClient pageEditClient,
+                        final ViewUtilWrapper viewUtil,
+                        @Named("username") final String username) {
         this.notificationHelper = notificationHelper;
         this.pageEditClient = pageEditClient;
         this.viewUtil = viewUtil;
@@ -61,7 +61,7 @@ public class DeleteHelper {
      * @param reason
      * @return
      */
-    public Single<Boolean> makeDeletion(Context context, Media media, String reason) {
+    public Single<Boolean> makeDeletion(final Context context, final Media media, final String reason) {
         viewUtil.showShortToast(context, "Trying to nominate " + media.getDisplayTitle() + " for deletion");
 
         return delete(media, reason)
@@ -75,30 +75,30 @@ public class DeleteHelper {
      * @param reason
      * @return
      */
-    private Observable<Boolean> delete(Media media, String reason) {
+    private Observable<Boolean> delete(final Media media, final String reason) {
         Timber.d("thread is delete %s", Thread.currentThread().getName());
-        String summary = "Nominating " + media.getFilename() + " for deletion.";
-        Calendar calendar = Calendar.getInstance();
-        String fileDeleteString = "{{delete|reason=" + reason +
+        final String summary = "Nominating " + media.getFilename() + " for deletion.";
+        final Calendar calendar = Calendar.getInstance();
+        final String fileDeleteString = "{{delete|reason=" + reason +
                 "|subpage=" + media.getFilename() +
                 "|day=" + calendar.get(Calendar.DAY_OF_MONTH) +
                 "|month=" + calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH) +
                 "|year=" + calendar.get(Calendar.YEAR) +
                 "}}";
 
-        String subpageString = "=== [[:" + media.getFilename() + "]] ===\n" +
+        final String subpageString = "=== [[:" + media.getFilename() + "]] ===\n" +
                 reason +
                 " ~~~~";
 
-        String logPageString = "\n{{Commons:Deletion requests/" + media.getFilename() +
+        final String logPageString = "\n{{Commons:Deletion requests/" + media.getFilename() +
                 "}}\n";
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
-        String date = sdf.format(calendar.getTime());
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
+        final String date = sdf.format(calendar.getTime());
 
-        String userPageString = "\n{{subst:idw|" + media.getFilename() +
+        final String userPageString = "\n{{subst:idw|" + media.getFilename() +
                 "}} ~~~~";
 
-        String creator = media.getAuthor();
+        final String creator = media.getAuthor();
         if (creator == null || creator.isEmpty()) {
             throw new RuntimeException("Failed to nominate for deletion");
         }
@@ -122,8 +122,8 @@ public class DeleteHelper {
                 });
     }
 
-    private boolean showDeletionNotification(Context context, Media media, boolean result) {
-        String message;
+    private boolean showDeletionNotification(final Context context, final Media media, final boolean result) {
+        final String message;
         String title = context.getString(R.string.delete_helper_show_deletion_title);
 
         if (result) {
@@ -134,8 +134,8 @@ public class DeleteHelper {
             message = context.getString(R.string.delete_helper_show_deletion_message_else) ;
         }
 
-        String urlForDelete = BuildConfig.COMMONS_URL + "/wiki/Commons:Deletion_requests/" + media.getFilename();
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlForDelete));
+        final String urlForDelete = BuildConfig.COMMONS_URL + "/wiki/Commons:Deletion_requests/" + media.getFilename();
+        final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlForDelete));
         notificationHelper.showNotification(context, title, message, NOTIFICATION_DELETE, browserIntent);
         return result;
     }
@@ -148,16 +148,16 @@ public class DeleteHelper {
      * @param problem
      */
     @SuppressLint("CheckResult")
-    public void askReasonAndExecute(Media media,
-                                    Context context,
-                                    String question,
-                                    ReviewController.DeleteReason problem,
-                                    ReviewController.ReviewCallback reviewCallback) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(context);
+    public void askReasonAndExecute(final Media media,
+                                    final Context context,
+                                    final String question,
+                                    final ReviewController.DeleteReason problem,
+                                    final ReviewController.ReviewCallback reviewCallback) {
+        final AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setTitle(question);
 
-        boolean[] checkedItems = {false, false, false, false};
-        ArrayList<Integer> mUserReason = new ArrayList<>();
+        final boolean[] checkedItems = {false, false, false, false};
+        final ArrayList<Integer> mUserReason = new ArrayList<>();
 
         String[] reasonList = {"Reason 1", "Reason 2", "Reason 3"};
         // Messages posted on-wiki should not be in the app user's locale, but rather in Commons' lingua franca English.
@@ -171,12 +171,16 @@ public class DeleteHelper {
             reasonListEnglish[1] = getLocalizedResources(context, Locale.ENGLISH).getString(R.string.delete_helper_ask_spam_blurry);
             reasonListEnglish[2] = getLocalizedResources(context, Locale.ENGLISH).getString(R.string.delete_helper_ask_spam_nonsense);
         } else if (problem == ReviewController.DeleteReason.COPYRIGHT_VIOLATION) {
+            reasonList = new String[]{"Reason 1", "Reason 2", "Reason 3", "Reason 4"};
+            reasonListEnglish = new String[]{"Eng1", "Eng2", "Eng3", "Eng4"};
             reasonList[0] = context.getString(R.string.delete_helper_ask_reason_copyright_press_photo);
             reasonList[1] = context.getString(R.string.delete_helper_ask_reason_copyright_internet_photo);
             reasonList[2] = context.getString(R.string.delete_helper_ask_reason_copyright_logo);
+            reasonList[3] = context.getString(R.string.delete_helper_ask_reason_copyright_panorama);
             reasonListEnglish[0] = getLocalizedResources(context, Locale.ENGLISH).getString(R.string.delete_helper_ask_reason_copyright_press_photo);
             reasonListEnglish[1] = getLocalizedResources(context, Locale.ENGLISH).getString(R.string.delete_helper_ask_reason_copyright_internet_photo);
             reasonListEnglish[2] = getLocalizedResources(context, Locale.ENGLISH).getString(R.string.delete_helper_ask_reason_copyright_logo);
+            reasonListEnglish[3] = getLocalizedResources(context, Locale.ENGLISH).getString(R.string.delete_helper_ask_reason_copyright_panorama);
         }
 
         alert.setMultiChoiceItems(reasonList, checkedItems, listener = (dialogInterface, position, isChecked) -> {
@@ -191,13 +195,14 @@ public class DeleteHelper {
             ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(
                 !mUserReason.isEmpty());
         });
+        final String[] newReasonListEnglish = reasonListEnglish;
 
         alert.setPositiveButton(context.getString(R.string.ok), (dialogInterface, i) -> {
 
             String reason = getLocalizedResources(context, Locale.ENGLISH).getString(R.string.delete_helper_ask_alert_set_positive_button_reason) + " ";
 
             for (int j = 0; j < mUserReason.size(); j++) {
-                reason = reason + reasonListEnglish[mUserReason.get(j)];
+                reason = reason + newReasonListEnglish[mUserReason.get(j)];
                 if (j != mUserReason.size() - 1) {
                     reason = reason + ", ";
                 }
@@ -205,7 +210,7 @@ public class DeleteHelper {
 
             Timber.d("thread is askReasonAndExecute %s", Thread.currentThread().getName());
 
-            String finalReason = reason;
+            final String finalReason = reason;
 
             Single.defer((Callable<SingleSource<Boolean>>) () ->
                 makeDeletion(context, media, finalReason))
